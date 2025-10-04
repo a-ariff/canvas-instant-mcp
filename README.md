@@ -1,6 +1,6 @@
-# Canvas MCP Smithery Proxy
+# Canvas Instant MCP
 
-This is a proxy server that forwards MCP requests to the main Canvas MCP server deployed on Cloudflare Workers. This repo exists specifically for Smithery integration, as Smithery's Git deployment model requires a Node.js TypeScript server.
+Ready-to-use Canvas MCP server for Smithery. This proxy forwards requests to a production Cloudflare Workers backend, giving you instant Canvas LMS integration without any deployment hassle.
 
 ## Architecture
 
@@ -8,9 +8,9 @@ This is a proxy server that forwards MCP requests to the main Canvas MCP server 
 Smithery → This Proxy → Cloudflare Workers (canvas-mcp-sse.ariff.dev) → Canvas API
 ```
 
-## Why This Proxy Exists
+## How It Works
 
-The main Canvas MCP server is deployed as Cloudflare Workers with OAuth 2.1 authentication. Smithery's deployment model expects a standard Node.js TypeScript server that it can build from Git. This proxy bridges that gap by:
+This server connects to a production-grade Canvas MCP backend running on Cloudflare Workers. You get instant access without deploying your own infrastructure:
 
 1. Accepting configuration from Smithery (Canvas API token, base URL, etc.)
 2. Forwarding all MCP tool calls to the actual Cloudflare Workers server
@@ -69,7 +69,7 @@ This repo is designed to be deployed via Smithery:
 
 1. Go to Smithery
 2. Click "Add Server" → "Continue with Git"
-3. Select this repository: `a-ariff/canvas-mcp-smithery-proxy`
+3. Select this repository: `a-ariff/canvas-instant-mcp`
 4. Base directory: `.` (root)
 5. Branch: `main`
 6. Configure your Canvas credentials
