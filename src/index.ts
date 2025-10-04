@@ -1,4 +1,3 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 // Configuration schema for Smithery
@@ -34,11 +33,6 @@ export const configSchema = z.object({
 export type Config = z.infer<typeof configSchema>;
 
 export default function createServer({ config }: { config: Config }) {
-  const server = new McpServer({
-    name: "Canvas Student MCP",
-    version: "2.0.0",
-  });
-
   // Proxy URL to actual Cloudflare Workers server
   const proxyUrl = "https://canvas-mcp-sse.ariff.dev/public";
 
@@ -75,174 +69,109 @@ export default function createServer({ config }: { config: Config }) {
     return data.result || data;
   }
 
-  // Register all Canvas tools
-
-  server.registerTool(
-    "list_courses",
-    {
-      title: "List Courses",
-      description: "Get all active Canvas courses for the authenticated user",
-      inputSchema: {},
-    },
-    async () => {
-      return await proxyToCanvasServer("list_courses", {});
-    }
-  );
-
-  server.registerTool(
-    "get_assignments",
-    {
-      title: "Get Course Assignments",
-      description: "Get assignments for a specific Canvas course",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
+  return {
+    name: "Canvas Instant MCP",
+    version: "1.0.0",
+    tools: {
+      list_courses: {
+        description: "Get all active Canvas courses for the authenticated user",
+        parameters: z.object({}),
+        execute: async () => {
+          return await proxyToCanvasServer("list_courses", {});
+        },
+      },
+      get_assignments: {
+        description: "Get assignments for a specific Canvas course",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+        }),
+        execute: async (params: { course_id: number }) => {
+          return await proxyToCanvasServer("get_assignments", params);
+        },
+      },
+      get_upcoming_assignments: {
+        description: "Get upcoming assignments across all courses with due dates in the next 7 days",
+        parameters: z.object({}),
+        execute: async () => {
+          return await proxyToCanvasServer("get_upcoming_assignments", {});
+        },
+      },
+      get_grades: {
+        description: "Get current grades for a Canvas course, including assignment scores and overall grade",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+        }),
+        execute: async (params: { course_id: number }) => {
+          return await proxyToCanvasServer("get_grades", params);
+        },
+      },
+      get_user_profile: {
+        description: "Get the authenticated user's Canvas profile information including name, email, and avatar",
+        parameters: z.object({}),
+        execute: async () => {
+          return await proxyToCanvasServer("get_user_profile", {});
+        },
+      },
+      get_modules: {
+        description: "Get all modules for a specific Canvas course",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+        }),
+        execute: async (params: { course_id: number }) => {
+          return await proxyToCanvasServer("get_modules", params);
+        },
+      },
+      get_announcements: {
+        description: "Get recent announcements for a specific Canvas course",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+        }),
+        execute: async (params: { course_id: number }) => {
+          return await proxyToCanvasServer("get_announcements", params);
+        },
+      },
+      get_discussions: {
+        description: "Get discussion topics for a specific Canvas course",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+        }),
+        execute: async (params: { course_id: number }) => {
+          return await proxyToCanvasServer("get_discussions", params);
+        },
+      },
+      get_calendar_events: {
+        description: "Get upcoming calendar events for the authenticated user across all courses",
+        parameters: z.object({}),
+        execute: async () => {
+          return await proxyToCanvasServer("get_calendar_events", {});
+        },
+      },
+      get_todo_items: {
+        description: "Get todo items (assignments needing attention) for the user",
+        parameters: z.object({}),
+        execute: async () => {
+          return await proxyToCanvasServer("get_todo_items", {});
+        },
+      },
+      get_quizzes: {
+        description: "Get all quizzes for a specific Canvas course",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+        }),
+        execute: async (params: { course_id: number }) => {
+          return await proxyToCanvasServer("get_quizzes", params);
+        },
+      },
+      get_submission_status: {
+        description: "Check submission status for a specific assignment in a course",
+        parameters: z.object({
+          course_id: z.number().describe("Canvas course ID"),
+          assignment_id: z.number().describe("Assignment ID"),
+        }),
+        execute: async (params: { course_id: number; assignment_id: number }) => {
+          return await proxyToCanvasServer("get_submission_status", params);
+        },
       },
     },
-    async ({ course_id }) => {
-      return await proxyToCanvasServer("get_assignments", { course_id });
-    }
-  );
-
-  server.registerTool(
-    "get_upcoming_assignments",
-    {
-      title: "Get Upcoming Assignments",
-      description:
-        "Get upcoming assignments across all courses with due dates in the next 7 days",
-      inputSchema: {},
-    },
-    async () => {
-      return await proxyToCanvasServer("get_upcoming_assignments", {});
-    }
-  );
-
-  server.registerTool(
-    "get_grades",
-    {
-      title: "Get Grades",
-      description:
-        "Get current grades for a Canvas course, including assignment scores and overall grade",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
-      },
-    },
-    async ({ course_id }) => {
-      return await proxyToCanvasServer("get_grades", { course_id });
-    }
-  );
-
-  server.registerTool(
-    "get_user_profile",
-    {
-      title: "Get User Profile",
-      description:
-        "Get the authenticated user's Canvas profile information including name, email, and avatar",
-      inputSchema: {},
-    },
-    async () => {
-      return await proxyToCanvasServer("get_user_profile", {});
-    }
-  );
-
-  server.registerTool(
-    "get_modules",
-    {
-      title: "Get Course Modules",
-      description: "Get all modules for a specific Canvas course",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
-      },
-    },
-    async ({ course_id }) => {
-      return await proxyToCanvasServer("get_modules", { course_id });
-    }
-  );
-
-  server.registerTool(
-    "get_announcements",
-    {
-      title: "Get Course Announcements",
-      description: "Get recent announcements for a specific Canvas course",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
-      },
-    },
-    async ({ course_id }) => {
-      return await proxyToCanvasServer("get_announcements", { course_id });
-    }
-  );
-
-  server.registerTool(
-    "get_discussions",
-    {
-      title: "Get Discussion Topics",
-      description: "Get discussion topics for a specific Canvas course",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
-      },
-    },
-    async ({ course_id }) => {
-      return await proxyToCanvasServer("get_discussions", { course_id });
-    }
-  );
-
-  server.registerTool(
-    "get_calendar_events",
-    {
-      title: "Get Calendar Events",
-      description:
-        "Get upcoming calendar events for the authenticated user across all courses",
-      inputSchema: {},
-    },
-    async () => {
-      return await proxyToCanvasServer("get_calendar_events", {});
-    }
-  );
-
-  server.registerTool(
-    "get_todo_items",
-    {
-      title: "Get Todo Items",
-      description: "Get todo items (assignments needing attention) for the user",
-      inputSchema: {},
-    },
-    async () => {
-      return await proxyToCanvasServer("get_todo_items", {});
-    }
-  );
-
-  server.registerTool(
-    "get_quizzes",
-    {
-      title: "Get Course Quizzes",
-      description: "Get all quizzes for a specific Canvas course",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
-      },
-    },
-    async ({ course_id }) => {
-      return await proxyToCanvasServer("get_quizzes", { course_id });
-    }
-  );
-
-  server.registerTool(
-    "get_submission_status",
-    {
-      title: "Get Submission Status",
-      description:
-        "Check submission status for a specific assignment in a course",
-      inputSchema: {
-        course_id: z.number().describe("Canvas course ID"),
-        assignment_id: z.number().describe("Assignment ID"),
-      },
-    },
-    async ({ course_id, assignment_id }) => {
-      return await proxyToCanvasServer("get_submission_status", {
-        course_id,
-        assignment_id,
-      });
-    }
-  );
-
-  return server.server;
+  };
 }
