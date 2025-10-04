@@ -1,7 +1,7 @@
 {
   "name": "canvas-instant-mcp",
   "version": "1.0.0",
-  "description": "Instant Canvas MCP Server - ready-to-use proxy for Canvas LMS integration with Smithery",
+  "description": "Instant Canvas LMS integration for AI assistants via ChatGPT connector",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {

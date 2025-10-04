@@ -1,6 +1,6 @@
 # Canvas Instant MCP
 
-Ready-to-use Canvas MCP server for Smithery. This proxy forwards requests to a production Cloudflare Workers backend, giving you instant Canvas LMS integration without any deployment hassle.
+Ready-to-use Canvas MCP server for ChatGPT and AI assistants. This proxy forwards requests to a production Cloudflare Workers backend, giving you instant Canvas LMS integration without any deployment hassle.
 
 ## Architecture
 
