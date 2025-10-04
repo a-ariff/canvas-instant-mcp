@@ -4,6 +4,7 @@
   "description": "Instant Canvas LMS integration for AI assistants via ChatGPT connector",
   "type": "module",
   "main": "src/index.ts",
+  "module": "./src/index.ts",
   "scripts": {
     "build": "tsc"
   },
