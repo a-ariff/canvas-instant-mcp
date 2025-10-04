@@ -71,7 +71,7 @@ export default function createServer({ config }: { config: Config }) {
       throw new Error(`Server responded with ${response.status}: ${await response.text()}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as any;
     return data.result || data;
   }
 
