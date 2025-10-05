@@ -1,5 +1,6 @@
 # Canvas Instant MCP
 
+[![smithery badge](https://smithery.ai/badge/@a-ariff/canvas-instant-mcp)](https://smithery.ai/server/@a-ariff/canvas-instant-mcp)
 Ready-to-use Canvas MCP server for ChatGPT and AI assistants. This proxy forwards requests to a production Cloudflare Workers backend, giving you instant Canvas LMS integration without any deployment hassle.
 
 ## Architecture
