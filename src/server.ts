@@ -115,6 +115,12 @@ const server = http.createServer(async (req, res) => {
         // Parse body for POST requests
         const parsedBody = body ? JSON.parse(body) : undefined;
 
+        // Fix Accept header for ChatGPT compatibility
+        // ChatGPT doesn't send the required Accept header, so we add it
+        if (!req.headers.accept || !req.headers.accept.includes("text/event-stream")) {
+          req.headers.accept = "application/json, text/event-stream";
+        }
+
         // Create a new server instance for EACH request (stateless mode)
         const mcpServer = createServer({ config });
 
