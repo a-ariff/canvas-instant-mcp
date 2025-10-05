@@ -97,62 +97,14 @@ const server = http.createServer(async (req, res) => {
         const jsonRpcRequest = JSON.parse(body);
         console.log(`[MCP] Received request:`, jsonRpcRequest.method);
 
-        // Handle JSON-RPC request
-        let result;
-
-        switch (jsonRpcRequest.method) {
-          case "initialize":
-            result = {
-              protocolVersion: "2024-11-05",
-              capabilities: {
-                tools: {},
-              },
-              serverInfo: {
-                name: "Canvas Instant MCP",
-                version: "2.0.0",
-              },
-            };
-            break;
-
-          case "tools/list":
-            // Get tools from MCP server
-            const toolsHandler = (mcpServer as any)._requestHandlers?.get(
-              "tools/list"
-            );
-            if (toolsHandler) {
-              result = await toolsHandler({});
-            } else {
-              result = { tools: [] };
-            }
-            break;
-
-          case "tools/call":
-            // Call tool via MCP server
-            const callHandler = (mcpServer as any)._requestHandlers?.get(
-              "tools/call"
-            );
-            if (callHandler) {
-              result = await callHandler({ params: jsonRpcRequest.params });
-            } else {
-              throw new Error("Tool calling not supported");
-            }
-            break;
-
-          default:
-            throw new Error(`Unknown method: ${jsonRpcRequest.method}`);
-        }
+        // Use the server's request method to handle the request properly
+        const response = await (mcpServer as any).request(jsonRpcRequest, {});
 
         // Send JSON-RPC response
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id: jsonRpcRequest.id,
-            result,
-          })
-        );
+        res.end(JSON.stringify(response));
       } catch (error: any) {
-        console.error(`[MCP] Error:`, error.message);
+        console.error(`[MCP] Error:`, error);
 
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(
@@ -161,7 +113,7 @@ const server = http.createServer(async (req, res) => {
             id: null,
             error: {
               code: -32603,
-              message: error.message,
+              message: error.message || "Internal server error",
             },
           })
         );
