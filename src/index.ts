@@ -68,7 +68,7 @@ class CanvasAPI {
   }
 
   async getUpcomingAssignments() {
-    const courses = await this.listCourses();
+    const courses = (await this.listCourses()) as any[];
     const allAssignments = await Promise.all(
       courses.map((course: any) =>
         this.getAssignments(course.id).catch(() => [])

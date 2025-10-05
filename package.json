@@ -5,8 +5,11 @@
   "type": "module",
   "module": "./src/index.ts",
   "scripts": {
-    "build": "smithery build",
-    "dev": "smithery dev"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsc && node dist/server.js",
+    "smithery:build": "smithery build",
+    "smithery:dev": "smithery dev"
   },
   "keywords": [
     "mcp",
