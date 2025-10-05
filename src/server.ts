@@ -116,11 +116,23 @@ const server = http.createServer(async (req, res) => {
     try {
       const mcpServer = createServer({ config });
 
-      // Call the tool directly using MCP server's tool handlers
-      const result = await (mcpServer as any).callTool({name: toolPath, arguments: toolArgs}, {});
+      // Connect the server first
+      await mcpServer.connect({
+        send: () => Promise.resolve(),
+        close: () => Promise.resolve(),
+      } as any);
+
+      // Use the server's request method with CallToolRequest
+      const response = await (mcpServer as any).request({
+        method: "tools/call",
+        params: {
+          name: toolPath,
+          arguments: toolArgs,
+        },
+      }, {});
 
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(result));
+      res.end(JSON.stringify(response.result || response));
     } catch (error: any) {
       console.error(`[Canvas API] Error:`, error);
       res.writeHead(500, { "Content-Type": "application/json" });
