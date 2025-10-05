@@ -15,6 +15,18 @@ export const configSchema = z.object({
     .string()
     .default("https://canvas.instructure.com")
     .describe("Your Canvas instance URL"),
+  debug: z
+    .boolean()
+    .default(false)
+    .describe("Enable debug logging"),
+  gradescopeEmail: z
+    .string()
+    .optional()
+    .describe("Gradescope email for authentication (optional)"),
+  gradescopePassword: z
+    .string()
+    .optional()
+    .describe("Gradescope password (optional)"),
 });
 
 export type Config = z.infer<typeof configSchema>;
