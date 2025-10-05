@@ -1,0 +1,57 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+  "name": "ai.smithery/canvas-instant-mcp",
+  "description": "Manage Canvas coursework with quick access to courses, assignments, and grades",
+  "version": "2.0.0",
+  "repository": {
+    "url": "https://github.com/a-ariff/canvas-instant-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/a-ariff/canvas-instant-mcp",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "canvas-instant-mcp",
+      "version": "2.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "npx",
+      "runtimeArguments": [
+        {
+          "type": "positional",
+          "value": "-y",
+          "description": "Auto-confirm package installation"
+        },
+        {
+          "type": "positional",
+          "value": "canvas-instant-mcp",
+          "description": "Package name"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "CANVAS_API_KEY",
+          "description": "Your Canvas API access token",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "CANVAS_BASE_URL",
+          "description": "Your Canvas instance URL",
+          "isRequired": false,
+          "default": "https://canvas.instructure.com",
+          "format": "string"
+        },
+        {
+          "name": "DEBUG",
+          "description": "Enable debug logging",
+          "isRequired": false,
+          "default": "false",
+          "format": "boolean"
+        }
+      ]
+    }
+  ]
+}
