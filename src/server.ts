@@ -85,6 +85,16 @@ const server = http.createServer(async (req, res) => {
 
   // MCP endpoint - Handle POST requests with StreamableHTTP transport
   if (req.url === "/mcp" && (req.method === "POST" || req.method === "GET" || req.method === "DELETE")) {
+    // Authentication check
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.MCP_AUTH_TOKEN;
+
+    if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
     let body = "";
 
     req.on("data", (chunk) => {
