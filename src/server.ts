@@ -62,6 +62,7 @@ const server = http.createServer(async (req, res) => {
         endpoints: {
           health: "/health",
           mcp: "/mcp (POST with JSON-RPC)",
+          canvas: "/canvas/:tool (GET - REST API for ChatGPT)",
         },
         tools: [
           "list_courses",
@@ -80,6 +81,51 @@ const server = http.createServer(async (req, res) => {
         repository: "https://github.com/a-ariff/canvas-instant-mcp",
       })
     );
+    return;
+  }
+
+  // ChatGPT-friendly REST API endpoints
+  if (req.url?.startsWith("/canvas/")) {
+    // Authentication check
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.MCP_AUTH_TOKEN;
+
+    if (!expectedToken) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Server misconfigured" }));
+      return;
+    }
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
+    // Parse the tool name and params from URL
+    const urlParts = req.url.split("?");
+    const toolPath = urlParts[0].replace("/canvas/", "");
+    const params = new URLSearchParams(urlParts[1] || "");
+
+    const toolArgs: any = {};
+    params.forEach((value, key) => {
+      // Convert numeric strings to numbers
+      toolArgs[key] = isNaN(Number(value)) ? value : Number(value);
+    });
+
+    try {
+      const mcpServer = createServer({ config });
+
+      // Call the tool directly using MCP server's tool handlers
+      const result = await (mcpServer as any).callTool({name: toolPath, arguments: toolArgs}, {});
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (error: any) {
+      console.error(`[Canvas API] Error:`, error);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: error.message }));
+    }
     return;
   }
 
