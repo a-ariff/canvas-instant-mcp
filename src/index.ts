@@ -19,6 +19,9 @@ export const configSchema = z.object({
 
 export type Config = z.infer<typeof configSchema>;
 
+// Mark this as a stateless server for Smithery
+export const stateless = true;
+
 // Canvas API client
 class CanvasAPI {
   constructor(
@@ -148,7 +151,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_upcoming_assignments",
-          description: "Get upcoming assignments across all courses",
+          description: "Get upcoming assignments across all courses with due dates in the next 7 days",
           inputSchema: {
             type: "object",
             properties: {},
@@ -156,7 +159,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_grades",
-          description: "Get current grades for a Canvas course",
+          description: "Get current grades for a Canvas course, including assignment scores and overall grade",
           inputSchema: {
             type: "object",
             properties: {
@@ -167,7 +170,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_user_profile",
-          description: "Get the authenticated user's Canvas profile",
+          description: "Get the authenticated user's Canvas profile information",
           inputSchema: {
             type: "object",
             properties: {},
@@ -186,7 +189,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_announcements",
-          description: "Get recent announcements for a specific Canvas course",
+          description: "Get recent announcements for a Canvas course",
           inputSchema: {
             type: "object",
             properties: {
@@ -197,7 +200,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_discussions",
-          description: "Get discussion topics for a specific Canvas course",
+          description: "Get discussion topics for a Canvas course",
           inputSchema: {
             type: "object",
             properties: {
@@ -208,7 +211,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_calendar_events",
-          description: "Get upcoming calendar events for the authenticated user",
+          description: "Get calendar events for the authenticated user",
           inputSchema: {
             type: "object",
             properties: {},
@@ -216,7 +219,7 @@ export default function createServer({ config }: { config: Config }) {
         },
         {
           name: "get_todo_items",
-          description: "Get todo items (assignments needing attention)",
+          description: "Get todo items (assignments that need action) for the authenticated user",
           inputSchema: {
             type: "object",
             properties: {},
