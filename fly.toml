@@ -1,7 +1,7 @@
 # fly.toml - Canvas Instant MCP Server configuration
 
 app = "canvas-instant-mcp"
-primary_region = "sea"  # Seattle - change to your preferred region
+primary_region = "sjc"  # San Jose, California (closest to NZ for low latency)
 
 [build]
 
