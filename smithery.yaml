@@ -1,8 +1,6 @@
 name: canvas-instant-mcp
-description: Instant Canvas LMS integration for AI assistants via ChatGPT connector - access courses, assignments, grades, and more with zero deployment
+description: Instant Canvas LMS integration for AI assistants via ChatGPT
 version: "2.0.0"
 author: a-ariff
 homepage: https://github.com/a-ariff/canvas-instant-mcp
 runtime: "typescript"
-env:
-  NODE_ENV: "production"
