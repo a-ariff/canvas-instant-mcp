@@ -1,20 +1,77 @@
 # Canvas Instant MCP
 
-Ready-to-use Canvas MCP server for ChatGPT and AI assistants. This proxy forwards requests to a production Cloudflare Workers backend, giving you instant Canvas LMS integration without any deployment hassle.
+Model Context Protocol (MCP) server for Canvas LMS - giving you instant Canvas integration with AI assistants like Claude Desktop and ChatGPT.
+
+🚀 **Live Server:** https://canvas-instant-mcp.fly.dev
+
+## Quick Start
+
+### For Claude Desktop
+
+Add to your Claude Desktop config:
+
+```json
+{
+  "mcpServers": {
+    "canvas": {
+      "command": "npx",
+      "args": ["-y", "@a-ariff/canvas-instant-mcp"],
+      "env": {
+        "CANVAS_API_KEY": "your_canvas_api_token",
+        "CANVAS_BASE_URL": "https://canvas.instructure.com"
+      }
+    }
+  }
+}
+```
+
+### For ChatGPT (Custom GPT)
+
+1. Create a new Custom GPT at https://chat.openai.com/gpts/editor
+2. In the **Actions** section, click "Create new action"
+3. Use this OpenAPI schema:
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Canvas LMS MCP
+  version: 1.0.0
+servers:
+  - url: https://canvas-instant-mcp.fly.dev
+paths:
+  /mcp:
+    post:
+      operationId: callMcpTool
+      summary: Call Canvas LMS tools
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jsonrpc:
+                  type: string
+                  default: "2.0"
+                method:
+                  type: string
+                  enum: [initialize, tools/list, tools/call]
+                params:
+                  type: object
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: Successful response
+```
+
+4. Save and test with: "List my Canvas courses"
 
 ## Architecture
 
 ```
-Smithery → This Proxy → Cloudflare Workers (canvas-mcp-sse.ariff.dev) → Canvas API
+AI Assistant → Canvas Instant MCP (Fly.io) → Canvas LMS API
 ```
-
-## How It Works
-
-This server connects to a production-grade Canvas MCP backend running on Cloudflare Workers. You get instant access without deploying your own infrastructure:
-
-1. Accepting configuration from Smithery (Canvas API token, base URL, etc.)
-2. Forwarding all MCP tool calls to the actual Cloudflare Workers server
-3. Returning results back to Smithery/Claude
 
 ## Available Tools
 

@@ -85,13 +85,22 @@ const server = http.createServer(async (req, res) => {
 
   // MCP endpoint - Handle POST requests with StreamableHTTP transport
   if (req.url === "/mcp" && (req.method === "POST" || req.method === "GET" || req.method === "DELETE")) {
-    // Authentication check
+    // Authentication check - REQUIRED for security
     const authHeader = req.headers.authorization;
     const expectedToken = process.env.MCP_AUTH_TOKEN;
 
-    if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+    // Always require authentication
+    if (!expectedToken) {
+      console.error("SECURITY ERROR: MCP_AUTH_TOKEN not configured!");
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Server misconfigured - authentication not set up" }));
+      return;
+    }
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+      console.warn(`[SECURITY] Unauthorized MCP access attempt from ${req.socket.remoteAddress}`);
       res.writeHead(401, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Unauthorized" }));
+      res.end(JSON.stringify({ error: "Unauthorized - valid API key required" }));
       return;
     }
 
