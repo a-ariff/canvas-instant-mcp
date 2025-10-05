@@ -1,5 +1,6 @@
 import http from "http";
 import createServer, { configSchema } from "./index.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 // Get configuration from environment variables
 const config = {
@@ -19,17 +20,15 @@ if (!config.canvasApiKey) {
 console.log("Initializing Canvas MCP Server...");
 console.log(`Canvas Base URL: ${config.canvasBaseUrl}`);
 
-// Create MCP server instance
-const mcpServer = createServer({ config });
-
 // Create HTTP server
 const PORT = process.env.PORT || 8080;
 
 const server = http.createServer(async (req, res) => {
   // Enable CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Mcp-Session-Id");
+  res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
 
   // Handle preflight
   if (req.method === "OPTIONS") {
@@ -84,8 +83,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // MCP endpoint
-  if (req.method === "POST" && req.url === "/mcp") {
+  // MCP endpoint - Handle POST requests with StreamableHTTP transport
+  if (req.url === "/mcp" && (req.method === "POST" || req.method === "GET" || req.method === "DELETE")) {
     let body = "";
 
     req.on("data", (chunk) => {
@@ -94,29 +93,43 @@ const server = http.createServer(async (req, res) => {
 
     req.on("end", async () => {
       try {
-        const jsonRpcRequest = JSON.parse(body);
-        console.log(`[MCP] Received request:`, jsonRpcRequest.method);
+        // Parse body for POST requests
+        const parsedBody = body ? JSON.parse(body) : undefined;
 
-        // Use the server's request method to handle the request properly
-        const response = await (mcpServer as any).request(jsonRpcRequest, {});
+        // Create a new server instance for EACH request (stateless mode)
+        const mcpServer = createServer({ config });
 
-        // Send JSON-RPC response
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(response));
+        // Create transport in stateless mode
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: undefined, // Stateless mode
+        });
+
+        // Clean up when request completes
+        res.on("close", () => {
+          transport.close();
+        });
+
+        // Connect the server to the transport
+        await mcpServer.connect(transport);
+
+        // Let the transport handle the request - this properly validates MCP protocol
+        await transport.handleRequest(req, res, parsedBody);
       } catch (error: any) {
         console.error(`[MCP] Error:`, error);
 
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id: null,
-            error: {
-              code: -32603,
-              message: error.message || "Internal server error",
-            },
-          })
-        );
+        if (!res.headersSent) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: null,
+              error: {
+                code: -32603,
+                message: error.message || "Internal server error",
+              },
+            })
+          );
+        }
       }
     });
 
