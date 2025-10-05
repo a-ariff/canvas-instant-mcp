@@ -4,30 +4,11 @@ import { z } from "zod";
 export const configSchema = z.object({
   canvasApiKey: z
     .string()
-    .describe(
-      "Your Canvas API access token (Get from Canvas → Account → Settings → Approved Integrations)"
-    ),
+    .describe("Your Canvas API access token"),
   canvasBaseUrl: z
     .string()
-    .url()
     .default("https://canvas.instructure.com")
-    .describe(
-      "Your Canvas instance URL (e.g., https://canvas.instructure.com)"
-    ),
-  debug: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe("Enable debug logging"),
-  gradescopeEmail: z
-    .string()
-    .email()
-    .optional()
-    .describe("Your Gradescope email address (optional)"),
-  gradescopePassword: z
-    .string()
-    .optional()
-    .describe("Your Gradescope password (optional)"),
+    .describe("Your Canvas instance URL"),
 });
 
 export type Config = z.infer<typeof configSchema>;
@@ -41,11 +22,6 @@ export default function createServer({ config }: { config: Config }) {
     const url = new URL(proxyUrl);
     url.searchParams.set("canvasApiKey", config.canvasApiKey);
     url.searchParams.set("canvasBaseUrl", config.canvasBaseUrl);
-    if (config.debug) url.searchParams.set("debug", "true");
-    if (config.gradescopeEmail)
-      url.searchParams.set("gradescopeEmail", config.gradescopeEmail);
-    if (config.gradescopePassword)
-      url.searchParams.set("gradescopePassword", config.gradescopePassword);
 
     const response = await fetch(url.toString(), {
       method: "POST",
