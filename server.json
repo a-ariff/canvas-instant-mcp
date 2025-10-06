@@ -33,7 +33,7 @@
         {
           "name": "CANVAS_API_KEY",
           "description": "Your Canvas API access token",
-          "isRequired": true,
+          "isRequired": false,
           "isSecret": true,
           "format": "string"
         },
