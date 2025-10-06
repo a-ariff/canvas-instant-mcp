@@ -6,10 +6,12 @@
   "module": "./src/index.ts",
   "scripts": {
     "build": "tsc",
+    "test": "npm run build",
     "start": "node dist/server.js",
     "dev": "tsc && node dist/server.js",
     "smithery:build": "smithery build",
-    "smithery:dev": "smithery dev"
+    "smithery:dev": "smithery dev",
+    "connector:command": "node scripts/print-connector-command.js"
   },
   "keywords": [
     "mcp",

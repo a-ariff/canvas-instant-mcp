@@ -1,0 +1,345 @@
+openapi: 3.1.0
+info:
+  title: Canvas Instant MCP REST API
+  version: 1.0.0
+  description: |
+    Read-only HTTP interface that exposes Canvas data retrieval tools for the Canvas Instant MCP server.
+    All operations require a bearer token in the `Authorization` header and are designed for non-consequential
+    search execution within ChatGPT.
+  contact:
+    name: Canvas Instant MCP Maintainers
+    url: https://github.com/a-ariff/canvas-instant-mcp
+  x-openai-metadata:
+    version: 1
+    categories:
+      - education
+      - productivity
+servers:
+  - url: https://canvas-instant-mcp.fly.dev
+    description: Production deployment
+components:
+  securitySchemes:
+    CanvasApiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: >-
+        Bearer token issued for the Canvas Instant MCP deployment. Set the value to
+        `Bearer ${MCP_AUTH_TOKEN}` when configuring clients like ChatGPT connectors.
+tags:
+  - name: courses
+    description: Retrieve course-level Canvas data.
+  - name: assignments
+    description: Fetch assignment information.
+  - name: grades
+    description: Inspect course grades and submissions.
+  - name: user
+    description: Look up information scoped to the authenticated Canvas user.
+  - name: modules
+    description: Review instructional modules and content.
+  - name: communications
+    description: Explore announcements, discussions, and calendar events.
+paths:
+  /canvas/list_courses:
+    get:
+      operationId: listCourses
+      summary: List the authenticated user's active Canvas courses
+      description: Returns up to 100 active courses for the user tied to the supplied Canvas API token.
+      tags:
+        - courses
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      responses:
+        '200':
+          description: A list of Canvas courses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_assignments:
+    get:
+      operationId: getAssignments
+      summary: Get assignments for a Canvas course
+      description: Retrieves up to 100 assignments for the specified course.
+      tags:
+        - assignments
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+      responses:
+        '200':
+          description: Assignment list for the requested course.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_upcoming_assignments:
+    get:
+      operationId: getUpcomingAssignments
+      summary: Get upcoming assignments across all courses
+      description: Returns the next 20 assignments with due dates after the current time across the user's courses.
+      tags:
+        - assignments
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      responses:
+        '200':
+          description: A list of upcoming assignments.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_grades:
+    get:
+      operationId: getGrades
+      summary: Get grade summary for a Canvas course
+      description: Retrieves enrollment details including total scores for the specified course.
+      tags:
+        - grades
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+      responses:
+        '200':
+          description: Grade information for the requested course.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_user_profile:
+    get:
+      operationId: getUserProfile
+      summary: Get Canvas user profile information
+      description: Returns the profile of the authenticated Canvas user.
+      tags:
+        - user
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      responses:
+        '200':
+          description: Canvas user profile details.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /canvas/get_modules:
+    get:
+      operationId: getModules
+      summary: Get modules for a Canvas course
+      description: Retrieves modules for the specified course.
+      tags:
+        - modules
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+      responses:
+        '200':
+          description: Module list for the requested course.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_announcements:
+    get:
+      operationId: getAnnouncements
+      summary: Get recent announcements for a Canvas course
+      description: Returns announcement topics that are marked as announcements for the course.
+      tags:
+        - communications
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+      responses:
+        '200':
+          description: Announcement list for the requested course.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_discussions:
+    get:
+      operationId: getDiscussions
+      summary: Get discussion topics for a Canvas course
+      description: Retrieves discussion topics for the specified course.
+      tags:
+        - communications
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+      responses:
+        '200':
+          description: Discussion topics for the requested course.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_calendar_events:
+    get:
+      operationId: getCalendarEvents
+      summary: Get upcoming calendar events for the user
+      description: Returns up to 50 upcoming calendar events for the authenticated user.
+      tags:
+        - communications
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      responses:
+        '200':
+          description: Calendar events for the user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_todo_items:
+    get:
+      operationId: getTodoItems
+      summary: Get to-do items for the user
+      description: Retrieves actionable to-do items for the authenticated user.
+      tags:
+        - assignments
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      responses:
+        '200':
+          description: To-do items for the user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_quizzes:
+    get:
+      operationId: getQuizzes
+      summary: Get quizzes for a Canvas course
+      description: Returns quizzes for the specified course.
+      tags:
+        - assignments
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+      responses:
+        '200':
+          description: Quiz list for the requested course.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /canvas/get_submission_status:
+    get:
+      operationId: getSubmissionStatus
+      summary: Get submission status for a Canvas assignment
+      description: Retrieves the authenticated user's submission details for the specified assignment.
+      tags:
+        - grades
+      security:
+        - CanvasApiKey: []
+      x-openai-isConsequential: false
+      x-openai-operation-type: search
+      parameters:
+        - in: query
+          name: course_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas course ID.
+        - in: query
+          name: assignment_id
+          required: true
+          schema:
+            type: integer
+          description: Canvas assignment ID.
+      responses:
+        '200':
+          description: Submission information for the requested assignment.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true

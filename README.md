@@ -25,47 +25,65 @@ Add to your Claude Desktop config:
 }
 ```
 
-### For ChatGPT (Custom GPT)
+### For ChatGPT (Custom GPT with Search)
 
-1. Create a new Custom GPT at https://chat.openai.com/gpts/editor
-2. In the **Actions** section, click "Create new action"
-3. Use this OpenAPI schema:
+1. Visit **Settings → General → Connectors** in ChatGPT and click **Add** to register a new connector.
+2. Give it a name (for example, `Canvas`) and set the **MCP Server URL** field to `https://canvas-instant-mcp.fly.dev`.
+3. When prompted for the schema, upload [`openapi/canvas.yaml`](openapi/canvas.yaml) (or paste its contents into the editor window).
+4. When the dialog asks about authentication, pick **Authentication required**, choose **API Key** from the dropdown, set the header name to `Authorization`, and paste `Bearer YOUR_MCP_AUTH_TOKEN` as the value. ChatGPT will store the secret securely.
+5. Save the connector, then enable it inside a Custom GPT via the **Actions → Add from library** flow.
+6. Test with prompts like "List my Canvas courses" or "What assignments are due this week?"—the non-consequential search operations will execute automatically during Search.
 
-```yaml
-openapi: 3.1.0
-info:
-  title: Canvas LMS MCP
-  version: 1.0.0
-servers:
-  - url: https://canvas-instant-mcp.fly.dev
-paths:
-  /mcp:
-    post:
-      operationId: callMcpTool
-      summary: Call Canvas LMS tools
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                jsonrpc:
-                  type: string
-                  default: "2.0"
-                method:
-                  type: string
-                  enum: [initialize, tools/list, tools/call]
-                params:
-                  type: object
-                id:
-                  type: integer
-      responses:
-        '200':
-          description: Successful response
+> **Field-by-field reference**
+>
+> | Connector dialog field | Value to enter |
+> | --- | --- |
+> | MCP Server URL | `https://canvas-instant-mcp.fly.dev` |
+> | OpenAPI schema | Upload `openapi/canvas.yaml` or paste its YAML |
+> | Authentication | `API Key` → header `Authorization`, value `Bearer YOUR_MCP_AUTH_TOKEN` |
+>
+> ⚠️ Paste each value into its matching field—do **not** put the entire reference block into the URL field like in the screenshot.
+
+> **Need the values with your real token?** Once you export the secret locally, run `npm run connector:command` (or `node scripts/print-connector-command.js --token <value>`) and the helper will print the connector URL, schema path, header name, header value, and a ready-to-run `curl` health check that already includes your key.
+
+> 💡 If the dialog only offers "No authentication" or throws `Error fetching OAuth configuration`, it is still holding on to an older cached schema. Close the connector editor, open it again, re-upload `openapi/canvas.yaml`, and the **API Key** option will appear alongside OAuth.
+
+> **Why a new schema?** The `openapi/canvas.yaml` document enumerates the read-only `GET /canvas/*` endpoints, tags them as non-consequential search actions, and tells ChatGPT to treat them as safe during Search.
+
+#### Check that the server is running
+
+You can confirm the public Fly.io deployment is healthy without any credentials by calling the health endpoint:
+
+```bash
+curl https://canvas-instant-mcp.fly.dev/health
 ```
 
-4. Save and test with: "List my Canvas courses"
+You should see a small JSON blob (status, version, timestamp). If the command times out or returns a 5xx, the hosted server is down and you will need to redeploy or contact whoever operates the Fly app. A `401` from any `/canvas/*` request means the server is up but you have not supplied the `MCP_AUTH_TOKEN` header.
+
+#### What's the `MCP_AUTH_TOKEN`?
+
+The `MCP_AUTH_TOKEN` is **not** your personal Canvas API token. It is a separate bearer token that proves your ChatGPT connector (or any other client) is allowed to call this MCP server. Only whoever operates the Fly.io deployment can mint or read it. If you run the deployment yourself, generate and fetch the token like this:
+
+```bash
+# Generate a new 32-byte token and store it as a Fly secret
+flyctl secrets set MCP_AUTH_TOKEN="$(openssl rand -base64 32)" --app canvas-instant-mcp
+
+# Confirm the value locally when you need to paste it into ChatGPT
+flyctl secrets list --app canvas-instant-mcp | awk '/MCP_AUTH_TOKEN/ {print $3}'
+```
+
+If you do **not** control the Fly app, ask the person who deployed the server to share the token with you securely—there is no way to derive it from your Canvas account. Only share the token with trusted clients (for example, ChatGPT's connector configuration). Anyone who has it can query the server on your behalf.
+
+#### Double-check the latest repository changes
+
+Wondering whether anything new landed in the repo? Run these commands from the project root:
+
+```bash
+git status -sb
+git log -1 --oneline
+```
+
+The `git status` line tells you if there are uncommitted edits, and `git log -1` prints the most recent commit message so you can confirm exactly what was last pushed.
 
 ## Architecture
 
@@ -118,6 +136,9 @@ npm run dev
 
 # Build
 npm run build
+
+# Type-check the project
+npm test
 ```
 
 ## Deployment
