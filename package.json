@@ -1,13 +1,22 @@
 {
   "name": "canvas-instant-mcp",
-  "version": "2.0.0",
-  "description": "Instant Canvas LMS integration for AI assistants via ChatGPT connector",
+  "version": "2.0.1",
+  "description": "Instant Canvas LMS integration for AI assistants via MCP",
   "type": "module",
-  "module": "./src/index.ts",
+  "main": "dist/standalone.js",
+  "bin": {
+    "canvas-instant-mcp": "dist/standalone.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "server.json"
+  ],
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "tsc && node dist/server.js",
+    "build": "tsc && chmod +x dist/standalone.js",
+    "start": "node dist/standalone.js",
+    "dev": "tsc && node dist/standalone.js",
+    "prepare": "npm run build",
     "smithery:build": "smithery build",
     "smithery:dev": "smithery dev"
   },
@@ -16,7 +25,8 @@
     "canvas",
     "lms",
     "education",
-    "smithery"
+    "smithery",
+    "model-context-protocol"
   ],
   "author": "a-ariff",
   "license": "MIT",
