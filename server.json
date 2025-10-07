@@ -10,23 +10,18 @@
   "websiteUrl": "https://github.com/a-ariff/canvas-instant-mcp",
   "packages": [
     {
-      "registryType": "npm",
-      "identifier": "canvas-instant-mcp",
+      "registryType": "github",
+      "identifier": "a-ariff/canvas-instant-mcp",
       "version": "2.0.1",
       "transport": {
         "type": "stdio"
       },
-      "runtimeHint": "npx",
+      "runtimeHint": "node",
       "runtimeArguments": [
         {
           "type": "positional",
-          "value": "-y",
-          "description": "Auto-confirm package installation"
-        },
-        {
-          "type": "positional",
-          "value": "canvas-instant-mcp",
-          "description": "Package name"
+          "value": "dist/standalone.js",
+          "description": "Standalone MCP server entry point"
         }
       ],
       "environmentVariables": [

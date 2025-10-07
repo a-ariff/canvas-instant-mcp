@@ -13,21 +13,16 @@ const rawConfig = {
 
 // Only validate required fields if they are actually provided
 // This allows the server to start up in sandbox environments
-let config;
-try {
-  // For Smithery sandbox: don't require API key at startup
-  if (!rawConfig.canvasApiKey) {
-    console.error("Warning: CANVAS_API_KEY not provided. Tools will fail without it.");
-  }
-  config = {
-    canvasApiKey: rawConfig.canvasApiKey,
-    canvasBaseUrl: rawConfig.canvasBaseUrl,
-    debug: rawConfig.debug,
-  };
-} catch (error) {
-  console.error("Configuration validation error:", error);
-  process.exit(1);
+// For Smithery sandbox: don't require API key at startup
+if (!rawConfig.canvasApiKey) {
+  console.error("Warning: CANVAS_API_KEY not provided. Tools will fail without it.");
 }
+
+const config = {
+  canvasApiKey: rawConfig.canvasApiKey,
+  canvasBaseUrl: rawConfig.canvasBaseUrl,
+  debug: rawConfig.debug,
+};
 
 // Create and run the server
 async function main() {
